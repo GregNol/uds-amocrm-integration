@@ -47,15 +47,24 @@ def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
 
 
 def parse_participant(payload: dict, request_id: str) -> NormalizedEvent | None:
-    """Новый клиент. В payload только id (телефон/email дотянем из API)."""
-    cid = payload.get("id")
+    """Новый клиент.
+
+    Реальный payload — объект клиента: id в participant.id, а телефон/email/имя
+    на верхнем уровне (обогащение из API не требуется).
+    """
+    cid = (payload.get("participant") or {}).get("id") or payload.get("id")
     if not cid:
         logger.warning("participant без id: %s", payload)
         return None
     return NormalizedEvent(
         event_id=request_id,
         event_type=EventType.NEW_CUSTOMER,
-        customer=Customer(uds_customer_id=str(cid)),
+        customer=Customer(
+            uds_customer_id=str(cid),
+            name=payload.get("displayName"),
+            phone=payload.get("phone"),
+            email=payload.get("email"),
+        ),
         source="UDS",
     )
 
@@ -86,10 +95,16 @@ def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
         logger.warning("order без customer.id: %s", payload)
         return None
 
+    # Телефон/имя получателя есть прямо в заказе (delivery) — берём оттуда.
+    delivery = payload.get("delivery") or {}
     return NormalizedEvent(
         event_id=request_id,
         event_type=event_type,
-        customer=Customer(uds_customer_id=str(c["id"]), name=c.get("displayName")),
+        customer=Customer(
+            uds_customer_id=str(c["id"]),
+            name=c.get("displayName") or delivery.get("receiverName"),
+            phone=delivery.get("receiverPhone"),
+        ),
         order_id=str(oid),
         order_state=state,
         amount=payload.get("total"),

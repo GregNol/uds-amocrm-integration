@@ -23,6 +23,16 @@ _retry = retry(
 )
 
 
+def _raise_for_status(resp: httpx.Response) -> None:
+    """raise_for_status, но с телом ответа amoCRM в тексте ошибки (видно причину 400)."""
+    if resp.is_error:
+        raise httpx.HTTPStatusError(
+            f"{resp.status_code} {resp.url}: {resp.text}",
+            request=resp.request,
+            response=resp,
+        )
+
+
 class AmoCRMClient:
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -47,7 +57,7 @@ class AmoCRMClient:
                 resp = await client.get("/api/v4/contacts", params={"query": query})
                 if resp.status_code == 204:  # ничего не найдено
                     continue
-                resp.raise_for_status()
+                _raise_for_status(resp)
                 contacts = resp.json().get("_embedded", {}).get("contacts", [])
                 if contacts:
                     return contacts[0]["id"]
@@ -69,7 +79,7 @@ class AmoCRMClient:
         body = [{"name": name, "custom_fields_values": custom_fields or None}]
         async with await self._client() as client:
             resp = await client.post("/api/v4/contacts", json=body)
-            resp.raise_for_status()
+            _raise_for_status(resp)
             return resp.json()["_embedded"]["contacts"][0]["id"]
 
     # ---------- Сделки ----------
@@ -119,7 +129,7 @@ class AmoCRMClient:
 
         async with await self._client() as client:
             resp = await client.post("/api/v4/leads", json=[lead])
-            resp.raise_for_status()
+            _raise_for_status(resp)
             return resp.json()["_embedded"]["leads"][0]["id"]
 
     @_retry
@@ -128,4 +138,4 @@ class AmoCRMClient:
             resp = await client.patch(
                 f"/api/v4/leads/{lead_id}", json={"status_id": status_id}
             )
-            resp.raise_for_status()
+            _raise_for_status(resp)
