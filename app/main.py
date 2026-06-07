@@ -1,6 +1,7 @@
 import json
 import logging
 from contextlib import asynccontextmanager
+from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -62,6 +63,34 @@ async def amocrm_callback(
 
 # ---------- UDS webhook ----------
 
+@app.get("/uds/events")
+async def uds_events(
+    secret: str | None = None,
+    limit: int = 20,
+    session: AsyncSession = Depends(get_session),
+):
+    """Отладка: последние пойманные события (сырой payload). Под тем же секретом."""
+    if settings.uds_webhook_secret and secret != settings.uds_webhook_secret:
+        raise HTTPException(status_code=403, detail="Bad secret")
+    rows = (
+        await session.execute(
+            select(EventLog).order_by(EventLog.id.desc()).limit(min(limit, 100))
+        )
+    ).scalars().all()
+    return [
+        {
+            "id": r.id,
+            "event_id": r.event_id,
+            "event_type": r.event_type,
+            "processed": r.processed,
+            "error": r.error,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "payload": json.loads(r.payload),
+        }
+        for r in rows
+    ]
+
+
 @app.post("/uds/webhook")
 async def uds_webhook(
     request: Request,
@@ -73,8 +102,22 @@ async def uds_webhook(
         raise HTTPException(status_code=403, detail="Bad secret")
 
     payload = await request.json()
+    payload_json = json.dumps(payload, ensure_ascii=False)
     event = parse_webhook(payload)
+
+    # Нераспознанный формат: всё равно сохраняем сырой payload для отладки парсера.
     if event is None:
+        session.add(
+            EventLog(
+                event_id=f"raw:{uuid4()}",
+                event_type="unknown",
+                payload=payload_json,
+                processed=True,
+                error="не распознан parse_webhook",
+            )
+        )
+        await session.commit()
+        logger.info("UDS вебхук не распознан, сохранён в event_log как unknown")
         return {"status": "ignored"}
 
     # Идемпотентность: повторный event_id не обрабатываем
@@ -89,7 +132,7 @@ async def uds_webhook(
     log = already or EventLog(
         event_id=event.event_id,
         event_type=event.event_type.value,
-        payload=json.dumps(payload, ensure_ascii=False),
+        payload=payload_json,
     )
     if already is None:
         session.add(log)
