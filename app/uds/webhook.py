@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 # поэтому из операций берём только обычные покупки, чтобы не плодить дубли сделок.
 _OPERATION_PURCHASE_ACTIONS = {"PURCHASE"}
 
-# Статусы заказа -> как трактуем
+# Заказы создаём как открытую сделку; закрытие — за менеджерами вручную
+# (UDS не шлёт вебхук при завершении заказа), поэтому COMPLETED/DELETED пропускаем.
 _ORDER_OPEN_STATES = {"NEW", "WAITING_PAYMENT", "NEED_ACK"}
-_ORDER_DONE_STATES = {"COMPLETED"}
 
 
 def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
@@ -70,11 +70,10 @@ def parse_participant(payload: dict, request_id: str) -> NormalizedEvent | None:
 
 
 def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
-    """Заказ UDS Goods.
+    """Заказ UDS Goods -> создаём открытую сделку.
 
-    NEW/WAITING_PAYMENT/NEED_ACK -> создаём сделку (open).
-    COMPLETED -> переиспользуем сделку по order_id и закрываем «Успешно».
-    DELETED и прочее -> пропускаем.
+    NEW/WAITING_PAYMENT/NEED_ACK -> сделка (open). Остальные статусы
+    (COMPLETED, DELETED, ...) пропускаем — закрытие за менеджерами.
     """
     oid = payload.get("id")
     if not oid:
@@ -82,13 +81,10 @@ def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
         return None
     state = payload.get("state")
 
-    if state in _ORDER_OPEN_STATES:
-        event_type = EventType.ORDER
-    elif state in _ORDER_DONE_STATES:
-        event_type = EventType.PURCHASE  # завершённый заказ -> закрыть сделку
-    else:
+    if state not in _ORDER_OPEN_STATES:
         logger.info("order state=%s пропущен", state)
         return None
+    event_type = EventType.ORDER
 
     c = payload.get("customer") or {}
     if not c.get("id"):
