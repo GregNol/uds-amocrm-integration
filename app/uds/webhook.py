@@ -64,6 +64,7 @@ def parse_participant(payload: dict, request_id: str) -> NormalizedEvent | None:
             name=payload.get("displayName"),
             phone=payload.get("phone"),
             email=payload.get("email"),
+            channel=payload.get("channelName"),
         ),
         source="UDS",
     )

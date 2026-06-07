@@ -78,12 +78,14 @@ async def _get_or_create_deal(
             return existing
 
     deal_name = f"UDS заказ {event.order_id}" if event.order_id else "UDS покупка"
+    # Источник = канал привлечения клиента из UDS, иначе фолбэк (UDS / UDS Goods).
+    source = event.customer.channel or event.source
     lead_id = await amo.create_lead(
         name=deal_name,
         contact_id=contact_id,
         status_id=status_id,
         price=event.amount,
-        source=event.source,
+        source=source,
         order_id=event.order_id,
     )
     logger.info("Создана сделка amoCRM id=%s", lead_id)

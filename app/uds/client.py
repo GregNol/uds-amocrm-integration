@@ -53,4 +53,5 @@ async def get_customer(uds_customer_id: str) -> Customer | None:
             name=None,  # UDS не отдаёт имя клиента через API
             phone=data.get("phone"),
             email=data.get("email"),
+            channel=data.get("channelName"),
         )

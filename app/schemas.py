@@ -19,6 +19,7 @@ class Customer(BaseModel):
     name: str | None = None
     phone: str | None = None
     email: str | None = None
+    channel: str | None = None  # канал привлечения UDS (channelName) -> "Источник"
 
 
 class NormalizedEvent(BaseModel):

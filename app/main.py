@@ -96,8 +96,10 @@ async def uds_events(
 
 
 async def _enrich_customer(event: NormalizedEvent) -> None:
-    """Дотянуть телефон/email из UDS API (в вебхуке их нет)."""
-    if event.customer.phone or event.customer.email:
+    """Дотянуть из UDS API недостающее: телефон/email и канал-источник (channelName)."""
+    need_contact = not (event.customer.phone or event.customer.email)
+    need_channel = not event.customer.channel
+    if not need_contact and not need_channel:
         return
     try:
         full = await uds_client.get_customer(event.customer.uds_customer_id)
@@ -105,8 +107,11 @@ async def _enrich_customer(event: NormalizedEvent) -> None:
         logger.exception("Не удалось обогатить клиента %s", event.customer.uds_customer_id)
         return
     if full:
-        event.customer.phone = full.phone
-        event.customer.email = full.email
+        if need_contact:
+            event.customer.phone = full.phone
+            event.customer.email = full.email
+        if need_channel:
+            event.customer.channel = full.channel
 
 
 async def _handle_webhook(
