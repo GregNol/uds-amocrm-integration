@@ -50,8 +50,8 @@ docker compose up -d --build
    - `POST /api/v2/events/operation`   — транзакция (покупка)
    - `POST /api/v2/events/participant` — новый клиент
    - `POST /api/v2/events/order`       — заказ
-   Подпись `X-Signature` проверяется при `UDS_VERIFY_SIGNATURE=true`
-   и заданном `UDS_WEBHOOK_SIGNING_KEY`.
+   Подпись `X-Signature` = md5(X-RequestId + X-Timestamp + company_id + api_key),
+   проверяется при `UDS_VERIFY_SIGNATURE=true`.
 
 ## Проверка
 ```bash
@@ -59,6 +59,4 @@ curl https://<APP_DOMAIN>/health
 ```
 
 ## TODO
-- Подтвердить алгоритм подписи UDS (`app/uds/security.py`), затем включить
-  `UDS_VERIFY_SIGNATURE=true` и задать `UDS_WEBHOOK_SIGNING_KEY`.
 - Перед продом заменить `create_all` на Alembic-миграции.

@@ -116,16 +116,19 @@ async def _handle_webhook(
 ) -> dict:
     """Общий конвейер для всех вебхуков UDS."""
     raw_body = await request.body()
-    request_id = request.headers.get("X-Origin-Request-Id") or f"raw:{uuid4()}"
+    # UDS называет заголовок по-разному в разных частях доки — читаем оба.
+    header_request_id = request.headers.get("X-RequestId") or request.headers.get(
+        "X-Origin-Request-Id"
+    )
 
     if not verify_signature(
-        request_id=request.headers.get("X-Origin-Request-Id"),
+        request_id=header_request_id,
         timestamp=request.headers.get("X-Timestamp"),
         signature=request.headers.get("X-Signature"),
-        raw_body=raw_body,
     ):
         raise HTTPException(status_code=403, detail="Bad signature")
 
+    request_id = header_request_id or f"raw:{uuid4()}"
     payload = json.loads(raw_body or b"{}")
     payload_json = json.dumps(payload, ensure_ascii=False)
     event = parser(payload, request_id)
