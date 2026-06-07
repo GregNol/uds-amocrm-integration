@@ -89,6 +89,8 @@ async def _get_or_create_deal(
         order_id=event.order_id,
     )
     logger.info("Создана сделка amoCRM id=%s", lead_id)
+    if event.note:
+        await amo.add_note(lead_id, event.note)
     deal = DealMap(
         uds_order_id=event.order_id or f"evt:{event.event_id}",
         amocrm_lead_id=lead_id,

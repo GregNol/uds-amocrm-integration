@@ -12,6 +12,7 @@ UDS шлёт события на три разных пути:
 import logging
 
 from app.schemas import Customer, EventType, NormalizedEvent
+from app.uds.notes import build_order_note, build_purchase_note
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
         customer=Customer(uds_customer_id=str(c["id"]), name=c.get("displayName")),
         amount=payload.get("total"),
         source="UDS",
+        note=build_purchase_note(payload),
     )
 
 
@@ -106,4 +108,5 @@ def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
         order_state=state,
         amount=payload.get("total"),
         source="UDS Goods",
+        note=build_order_note(payload),
     )

@@ -139,3 +139,11 @@ class AmoCRMClient:
                 f"/api/v4/leads/{lead_id}", json={"status_id": status_id}
             )
             _raise_for_status(resp)
+
+    @_retry
+    async def add_note(self, lead_id: int, text: str) -> None:
+        """Добавить служебное примечание (common) к сделке."""
+        body = [{"note_type": "common", "params": {"text": text}}]
+        async with await self._client() as client:
+            resp = await client.post(f"/api/v4/leads/{lead_id}/notes", json=body)
+            _raise_for_status(resp)

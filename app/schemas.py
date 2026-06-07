@@ -30,3 +30,4 @@ class NormalizedEvent(BaseModel):
     order_state: str | None = None  # NEW / COMPLETED / ... (для заказов)
     amount: float | None = None  # сумма (total)
     source: str | None = "UDS"
+    note: str | None = None  # служебное примечание в сделку amoCRM
