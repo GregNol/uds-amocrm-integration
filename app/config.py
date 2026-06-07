@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     amocrm_client_id: str = ""
     amocrm_client_secret: str = ""
     amocrm_redirect_uri: str = ""
+    # Долгосрочный токен. Если задан — используется напрямую, OAuth не нужен.
+    amocrm_long_lived_token: str = ""
     amocrm_pipeline_id: int | None = None
     amocrm_status_new_id: int | None = None
     amocrm_status_won_id: int | None = None

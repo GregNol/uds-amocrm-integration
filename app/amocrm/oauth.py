@@ -60,7 +60,14 @@ async def _refresh(session: AsyncSession, token: TokenStore) -> TokenStore:
 
 
 async def get_access_token(session: AsyncSession) -> str:
-    """Вернуть валидный access_token, при необходимости обновив его."""
+    """Вернуть валидный access_token.
+
+    Если задан долгосрочный токен (AMOCRM_LONG_LIVED_TOKEN) — используем его
+    напрямую без OAuth. Иначе берём пару из БД и при необходимости рефрешим.
+    """
+    if settings.amocrm_long_lived_token:
+        return settings.amocrm_long_lived_token
+
     token = (await session.execute(select(TokenStore).limit(1))).scalar_one_or_none()
     if token is None:
         raise RuntimeError(
