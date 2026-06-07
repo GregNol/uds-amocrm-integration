@@ -77,8 +77,9 @@ async def _get_or_create_deal(
         if existing:
             return existing
 
+    deal_name = f"UDS заказ {event.order_id}" if event.order_id else "UDS покупка"
     lead_id = await amo.create_lead(
-        name=f"UDS заказ {event.order_id or event.event_id}",
+        name=deal_name,
         contact_id=contact_id,
         status_id=status_id,
         price=event.amount,
