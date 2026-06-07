@@ -1,10 +1,27 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @field_validator(
+        "amocrm_pipeline_id",
+        "amocrm_status_new_id",
+        "amocrm_status_won_id",
+        "amocrm_cf_source_id",
+        "amocrm_cf_amount_id",
+        "amocrm_cf_order_id",
+        mode="before",
+    )
+    @classmethod
+    def _empty_str_to_none(cls, v):
+        """Пустое значение в .env (например AMOCRM_CF_AMOUNT_ID=) трактуем как None."""
+        if isinstance(v, str) and v.strip() == "":
+            return None
+        return v
 
     # amoCRM
     amocrm_subdomain: str
