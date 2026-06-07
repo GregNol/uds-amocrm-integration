@@ -1,8 +1,13 @@
-"""Парсинг сырого вебхука UDS в NormalizedEvent.
+"""Парсеры вебхуков UDS в NormalizedEvent.
 
-ВАЖНО: формат вебхука зависит от настроек UDS. Ниже — разумное допущение
-по структуре. После получения первого реального вебхука (он логируется в
-event_log.payload) поправим маппинг под факт. Места для правки помечены TODO.
+UDS шлёт события на три разных пути:
+  POST /api/v2/events/operation    — транзакция (покупка)
+  POST /api/v2/events/participant  — новый клиент
+  POST /api/v2/events/order        — заказ (UDS Goods), со статусами
+
+В payload нет телефона/email — только id клиента. Контакты дотягиваются
+отдельно через GET /customers/{id} (см. app/uds/client.py), здесь только
+нормализация структуры события.
 """
 import logging
 
@@ -10,53 +15,83 @@ from app.schemas import Customer, EventType, NormalizedEvent
 
 logger = logging.getLogger(__name__)
 
-# Маппинг типа события UDS -> наш EventType. TODO: сверить названия с UDS.
-_TYPE_MAP = {
-    "customer.created": EventType.NEW_CUSTOMER,
-    "new_customer": EventType.NEW_CUSTOMER,
-    "purchase": EventType.PURCHASE,
-    "purchase.created": EventType.PURCHASE,
-    "order": EventType.ORDER,
-    "order.created": EventType.ORDER,
-}
+# В операциях GOODS_PURCHASE приходит ещё и как отдельный заказ (webhook order),
+# поэтому из операций берём только обычные покупки, чтобы не плодить дубли сделок.
+_OPERATION_PURCHASE_ACTIONS = {"PURCHASE"}
+
+# Статусы заказа -> как трактуем
+_ORDER_OPEN_STATES = {"NEW", "WAITING_PAYMENT", "NEED_ACK"}
+_ORDER_DONE_STATES = {"COMPLETED"}
 
 
-def parse_webhook(payload: dict) -> NormalizedEvent | None:
-    """Привести сырой payload UDS к NormalizedEvent. None — событие игнорируем."""
-    raw_type = str(payload.get("type") or payload.get("event") or "").lower()
-    event_type = _TYPE_MAP.get(raw_type)
-    if event_type is None:
-        logger.info("Неизвестный тип события UDS: %r — пропускаем", raw_type)
+def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
+    """Транзакция -> покупка. Берём только action=PURCHASE, state=NORMAL."""
+    if payload.get("action") not in _OPERATION_PURCHASE_ACTIONS:
+        logger.info("operation action=%s пропущен", payload.get("action"))
+        return None
+    if payload.get("state", "NORMAL") != "NORMAL":
         return None
 
-    # TODO: подогнать пути извлечения под реальную структуру вебхука UDS.
-    data = payload.get("data", payload)
-    customer_data = data.get("customer", data)
-
-    customer = Customer(
-        uds_customer_id=str(
-            customer_data.get("id") or customer_data.get("customerId") or ""
-        ),
-        name=customer_data.get("displayName") or customer_data.get("name"),
-        phone=customer_data.get("phone"),
-        email=customer_data.get("email"),
-    )
-
-    event_id = str(
-        payload.get("id")
-        or data.get("id")
-        or data.get("operationId")
-        or ""
-    )
-    if not event_id or not customer.uds_customer_id:
-        logger.warning("В вебхуке нет event_id или customer_id: %s", payload)
+    c = payload.get("customer") or {}
+    if not c.get("id"):
+        logger.warning("operation без customer.id: %s", payload)
         return None
 
     return NormalizedEvent(
-        event_id=event_id,
-        event_type=event_type,
-        customer=customer,
-        order_id=str(data["orderId"]) if data.get("orderId") else None,
-        amount=data.get("total") or data.get("amount"),
+        event_id=request_id,
+        event_type=EventType.PURCHASE,
+        customer=Customer(uds_customer_id=str(c["id"]), name=c.get("displayName")),
+        amount=payload.get("total"),
         source="UDS",
+    )
+
+
+def parse_participant(payload: dict, request_id: str) -> NormalizedEvent | None:
+    """Новый клиент. В payload только id (телефон/email дотянем из API)."""
+    cid = payload.get("id")
+    if not cid:
+        logger.warning("participant без id: %s", payload)
+        return None
+    return NormalizedEvent(
+        event_id=request_id,
+        event_type=EventType.NEW_CUSTOMER,
+        customer=Customer(uds_customer_id=str(cid)),
+        source="UDS",
+    )
+
+
+def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
+    """Заказ UDS Goods.
+
+    NEW/WAITING_PAYMENT/NEED_ACK -> создаём сделку (open).
+    COMPLETED -> переиспользуем сделку по order_id и закрываем «Успешно».
+    DELETED и прочее -> пропускаем.
+    """
+    oid = payload.get("id")
+    if not oid:
+        logger.warning("order без id: %s", payload)
+        return None
+    state = payload.get("state")
+
+    if state in _ORDER_OPEN_STATES:
+        event_type = EventType.ORDER
+    elif state in _ORDER_DONE_STATES:
+        event_type = EventType.PURCHASE  # завершённый заказ -> закрыть сделку
+    else:
+        logger.info("order state=%s пропущен", state)
+        return None
+
+    c = payload.get("customer") or {}
+    if not c.get("id"):
+        logger.warning("order без customer.id: %s", payload)
+        return None
+
+    return NormalizedEvent(
+        event_id=request_id,
+        event_type=event_type,
+        customer=Customer(uds_customer_id=str(c["id"]), name=c.get("displayName")),
+        order_id=str(oid),
+        order_state=state,
+        amount=payload.get("total"),
+        source="UDS Goods",
     )

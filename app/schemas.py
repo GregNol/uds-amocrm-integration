@@ -22,9 +22,10 @@ class Customer(BaseModel):
 
 
 class NormalizedEvent(BaseModel):
-    event_id: str  # уникальный ID операции UDS — ключ идемпотентности
+    event_id: str  # X-Origin-Request-Id вебхука — ключ идемпотентности
     event_type: EventType
     customer: Customer
     order_id: str | None = None  # для purchase/order
-    amount: float | None = None  # сумма
+    order_state: str | None = None  # NEW / COMPLETED / ... (для заказов)
+    amount: float | None = None  # сумма (total)
     source: str | None = "UDS"

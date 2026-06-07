@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     uds_company_id: str = ""
     uds_api_key: str = ""
     uds_webhook_secret: str = ""
+    # Проверка подписи вебхуков UDS (X-Signature). Ключ берётся из настроек
+    # вебхука в кабинете UDS. Пока ключа нет — verify выключен (только лог).
+    uds_webhook_signing_key: str = ""
+    uds_verify_signature: bool = False
 
     # Infra
     database_url: str

@@ -20,7 +20,7 @@
 ## Структура
 ```
 app/
-  main.py            FastAPI: /health, /amocrm/auth, /amocrm/callback, /uds/webhook
+  main.py            FastAPI: /health, /amocrm/*, /api/v2/events/* (вебхуки UDS), /uds/events
   config.py          настройки из .env
   db.py / models.py  Postgres (токены, маппинги, журнал событий)
   amocrm/            OAuth + REST-клиент amoCRM
@@ -45,15 +45,20 @@ docker compose up -d --build
    docker compose exec app python -m scripts.dump_amocrm_meta
    ```
    Скопировать значения в `.env`, затем `docker compose up -d` (перезапуск).
-4. **Вебхук UDS:** указать URL
-   `https://<APP_DOMAIN>/uds/webhook?secret=<UDS_WEBHOOK_SECRET>`.
+4. **Вебхуки UDS:** в кабинете UDS указать базовый URL `https://<APP_DOMAIN>`.
+   UDS сам шлёт на три пути:
+   - `POST /api/v2/events/operation`   — транзакция (покупка)
+   - `POST /api/v2/events/participant` — новый клиент
+   - `POST /api/v2/events/order`       — заказ
+   Подпись `X-Signature` проверяется при `UDS_VERIFY_SIGNATURE=true`
+   и заданном `UDS_WEBHOOK_SIGNING_KEY`.
 
 ## Проверка
 ```bash
 curl https://<APP_DOMAIN>/health
 ```
 
-## TODO (сверить с реальными данными)
-- Формат вебхука UDS → `app/uds/webhook.py` (маппинг типов и полей).
-- Пути эндпоинтов UDS API → `app/uds/client.py`.
+## TODO
+- Подтвердить алгоритм подписи UDS (`app/uds/security.py`), затем включить
+  `UDS_VERIFY_SIGNATURE=true` и задать `UDS_WEBHOOK_SIGNING_KEY`.
 - Перед продом заменить `create_all` на Alembic-миграции.

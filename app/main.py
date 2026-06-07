@@ -1,5 +1,6 @@
 import json
 import logging
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from uuid import uuid4
 
@@ -12,8 +13,11 @@ from app.amocrm import oauth
 from app.config import settings
 from app.db import get_session, init_db
 from app.models import EventLog
+from app.schemas import NormalizedEvent
 from app.services.sync import process_event
-from app.uds.webhook import parse_webhook
+from app.uds import client as uds_client
+from app.uds.security import verify_signature
+from app.uds.webhook import parse_operation, parse_order, parse_participant
 
 logging.basicConfig(level=settings.log_level)
 logger = logging.getLogger(__name__)
@@ -91,36 +95,55 @@ async def uds_events(
     ]
 
 
-@app.post("/uds/webhook")
-async def uds_webhook(
+async def _enrich_customer(event: NormalizedEvent) -> None:
+    """Дотянуть телефон/email из UDS API (в вебхуке их нет)."""
+    if event.customer.phone or event.customer.email:
+        return
+    try:
+        full = await uds_client.get_customer(event.customer.uds_customer_id)
+    except Exception:  # noqa: BLE001
+        logger.exception("Не удалось обогатить клиента %s", event.customer.uds_customer_id)
+        return
+    if full:
+        event.customer.phone = full.phone
+        event.customer.email = full.email
+
+
+async def _handle_webhook(
     request: Request,
-    secret: str | None = None,
-    session: AsyncSession = Depends(get_session),
-):
-    # Проверка секрета (UDS не подписывает вебхуки — защищаемся секретом в URL)
-    if settings.uds_webhook_secret and secret != settings.uds_webhook_secret:
-        raise HTTPException(status_code=403, detail="Bad secret")
+    session: AsyncSession,
+    parser: Callable[[dict, str], NormalizedEvent | None],
+) -> dict:
+    """Общий конвейер для всех вебхуков UDS."""
+    raw_body = await request.body()
+    request_id = request.headers.get("X-Origin-Request-Id") or f"raw:{uuid4()}"
 
-    payload = await request.json()
+    if not verify_signature(
+        request_id=request.headers.get("X-Origin-Request-Id"),
+        timestamp=request.headers.get("X-Timestamp"),
+        signature=request.headers.get("X-Signature"),
+        raw_body=raw_body,
+    ):
+        raise HTTPException(status_code=403, detail="Bad signature")
+
+    payload = json.loads(raw_body or b"{}")
     payload_json = json.dumps(payload, ensure_ascii=False)
-    event = parse_webhook(payload)
+    event = parser(payload, request_id)
 
-    # Нераспознанный формат: всё равно сохраняем сырой payload для отладки парсера.
+    # Событие пропущено парсером — сохраняем сырой payload для отладки.
     if event is None:
         session.add(
             EventLog(
-                event_id=f"raw:{uuid4()}",
-                event_type="unknown",
+                event_id=f"skip:{request_id}:{uuid4()}",
+                event_type="skipped",
                 payload=payload_json,
                 processed=True,
-                error="не распознан parse_webhook",
             )
         )
         await session.commit()
-        logger.info("UDS вебхук не распознан, сохранён в event_log как unknown")
         return {"status": "ignored"}
 
-    # Идемпотентность: повторный event_id не обрабатываем
+    # Идемпотентность по X-Origin-Request-Id
     already = (
         await session.execute(
             select(EventLog).where(EventLog.event_id == event.event_id)
@@ -139,6 +162,7 @@ async def uds_webhook(
         await session.commit()
 
     try:
+        await _enrich_customer(event)
         await process_event(session, event)
         log.processed = True
         log.error = None
@@ -151,3 +175,18 @@ async def uds_webhook(
         raise HTTPException(status_code=500, detail="processing failed") from exc
 
     return {"status": "ok"}
+
+
+@app.post("/api/v2/events/operation")
+async def uds_operation(request: Request, session: AsyncSession = Depends(get_session)):
+    return await _handle_webhook(request, session, parse_operation)
+
+
+@app.post("/api/v2/events/participant")
+async def uds_participant(request: Request, session: AsyncSession = Depends(get_session)):
+    return await _handle_webhook(request, session, parse_participant)
+
+
+@app.post("/api/v2/events/order")
+async def uds_order(request: Request, session: AsyncSession = Depends(get_session)):
+    return await _handle_webhook(request, session, parse_order)
