@@ -5,9 +5,12 @@
 ## Стек
 - Python 3.12 + FastAPI
 - PostgreSQL 16
-- Docker Compose (app + db + Caddy с авто-HTTPS)
+- Docker Compose (app + db). HTTPS обслуживает **общий Caddy** из `../caddy`
+  через внешнюю сеть `edge` — один прокси на несколько интеграций сервера.
 
-Домен задаётся переменной `APP_DOMAIN` в `.env` (в репозиторий не попадает).
+Домен задаётся в `Caddyfile` общего прокси (`../caddy`), проксируется на
+сетевой алиас `uds-amocrm-app:8000`. Переменная `APP_DOMAIN` в `.env` всё ещё
+нужна приложению (сборка OAuth-redirect и т.п.).
 
 ## Сценарии
 1. **Новый клиент в UDS** → контакт в amoCRM (если ещё нет).
@@ -32,12 +35,18 @@ scripts/
 
 ## Запуск
 ```bash
+docker network create edge        # один раз на сервере (общая сеть с Caddy)
+cd ../caddy && docker compose up -d   # общий reverse-proxy (если ещё не запущен)
+
 cp .env.example .env       # заполнить значения (в т.ч. APP_DOMAIN)
 docker compose up -d --build
 ```
 
+Маршрут `<домен> → uds-amocrm-app:8000` прописывается в `../caddy/Caddyfile`
+(или `../caddy/sites/*.caddy`). Порты 80/443 слушает Caddy, не интеграция.
+
 ### Первичная настройка
-1. **DNS:** A-запись поддомена (значение `APP_DOMAIN`) → IP VPS. Открыть порты 80/443.
+1. **DNS:** A-запись поддомена (значение `APP_DOMAIN`) → IP VPS. Порты 80/443 открывает общий Caddy.
 2. **OAuth amoCRM:** открыть `https://<APP_DOMAIN>/amocrm/auth`, выдать права.
    Токены сохранятся в БД. (Либо вставить одноразовый «код авторизации» из интеграции.)
 3. **ID воронки/статусов/полей:**

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
         "amocrm_cf_source_id",
         "amocrm_cf_amount_id",
         "amocrm_cf_order_id",
+        "amocrm_cf_source_select_id",
+        "amocrm_cf_source_select_enum_id",
         mode="before",
     )
     @classmethod
@@ -36,6 +38,9 @@ class Settings(BaseSettings):
     amocrm_cf_source_id: int | None = None
     amocrm_cf_amount_id: int | None = None
     amocrm_cf_order_id: int | None = None
+    # Селект-поле "Источник заявки": при создании сделки проставляем фикс. вариант (UDS).
+    amocrm_cf_source_select_id: int | None = None
+    amocrm_cf_source_select_enum_id: int | None = None
 
     # UDS
     uds_company_id: str = ""

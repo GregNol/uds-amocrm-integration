@@ -23,23 +23,19 @@ services:
         condition: service_healthy
     expose:
       - "8000"
+    networks:
+      # внутренняя сеть проекта (доступ к db)
+      default:
+      # общий reverse-proxy (Caddy) — уникальный алиас для этой интеграции
+      edge:
+        aliases:
+          - uds-amocrm-app
 
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    environment:
-      APP_DOMAIN: ${APP_DOMAIN}
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
+# HTTPS обслуживает общий Caddy из ../caddy (внешняя сеть edge).
+# Создать один раз:  docker network create edge
+networks:
+  edge:
+    external: true
 
 volumes:
   pgdata:
-  caddy_data:
-  caddy_config:

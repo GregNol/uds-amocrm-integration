@@ -100,6 +100,13 @@ class AmoCRMClient:
             fields.append(
                 {"field_id": settings.amocrm_cf_order_id, "values": [{"value": order_id}]}
             )
+        if settings.amocrm_cf_source_select_id and settings.amocrm_cf_source_select_enum_id:
+            fields.append(
+                {
+                    "field_id": settings.amocrm_cf_source_select_id,
+                    "values": [{"enum_id": settings.amocrm_cf_source_select_enum_id}],
+                }
+            )
         return fields
 
     @_retry
