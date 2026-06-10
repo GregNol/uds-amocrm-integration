@@ -140,6 +140,24 @@ class AmoCRMClient:
             return resp.json()["_embedded"]["leads"][0]["id"]
 
     @_retry
+    async def find_lead_by_order_id(self, order_id: str) -> int | None:
+        """Поиск сделки по значению кастомного поля 'Номер заказа UDS'. Возвращает ID или None."""
+        if not settings.amocrm_cf_order_id:
+            return None
+        params: dict = {
+            f"filter[custom_fields_values][{settings.amocrm_cf_order_id}][values][0]": order_id,
+        }
+        if settings.amocrm_pipeline_id:
+            params["filter[pipeline_id][0]"] = settings.amocrm_pipeline_id
+        async with await self._client() as client:
+            resp = await client.get("/api/v4/leads", params=params)
+            if resp.status_code == 204:
+                return None
+            _raise_for_status(resp)
+            leads = resp.json().get("_embedded", {}).get("leads", [])
+            return leads[0]["id"] if leads else None
+
+    @_retry
     async def update_lead_status(self, lead_id: int, status_id: int) -> None:
         async with await self._client() as client:
             resp = await client.patch(

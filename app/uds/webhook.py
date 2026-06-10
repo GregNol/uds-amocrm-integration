@@ -38,10 +38,12 @@ def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
         logger.warning("operation без customer.id: %s", payload)
         return None
 
+    op_id = payload.get("id")
     return NormalizedEvent(
         event_id=request_id,
         event_type=EventType.PURCHASE,
         customer=Customer(uds_customer_id=str(c["id"]), name=c.get("displayName")),
+        order_id=str(op_id) if op_id else None,
         amount=payload.get("total"),
         source="UDS",
         note=build_purchase_note(payload),

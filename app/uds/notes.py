@@ -93,7 +93,11 @@ def build_order_note(payload: dict) -> str:
 
 def build_purchase_note(payload: dict) -> str:
     c = payload.get("customer") or {}
-    lines = ["ПОКУПКА В UDS", _HR, f"Сумма: {_money(payload.get('total'))}"]
+    op_id = payload.get("id")
+    lines = ["ПОКУПКА В UDS"]
+    if op_id:
+        lines.append(f"Операция №{op_id}")
+    lines += [_HR, f"Сумма: {_money(payload.get('total'))}"]
     if payload.get("receiptNumber"):
         lines.append(f"Чек №{payload['receiptNumber']}")
     if c.get("id"):

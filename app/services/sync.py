@@ -77,7 +77,31 @@ async def _get_or_create_deal(
         if existing:
             return existing
 
-    deal_name = f"UDS заказ {event.order_id}" if event.order_id else "UDS покупка"
+        # Сделка могла быть создана вручную в amoCRM — ищем по полю номера заказа.
+        found_id = await amo.find_lead_by_order_id(event.order_id)
+        if found_id:
+            logger.info(
+                "Найдена существующая сделка amoCRM id=%s с номером заказа %s",
+                found_id,
+                event.order_id,
+            )
+            deal = DealMap(
+                uds_order_id=event.order_id,
+                amocrm_lead_id=found_id,
+                status="open",
+            )
+            session.add(deal)
+            await session.commit()
+            if event.note:
+                await amo.add_note(found_id, event.note)
+            return deal
+
+        if event.event_type == EventType.PURCHASE:
+            deal_name = f"UDS операция {event.order_id}"
+        else:
+            deal_name = f"UDS заказ {event.order_id}"
+    else:
+        deal_name = "UDS покупка"
     # Источник = канал привлечения клиента из UDS, иначе фолбэк (UDS / UDS Goods).
     source = event.customer.channel or event.source
     lead_id = await amo.create_lead(
