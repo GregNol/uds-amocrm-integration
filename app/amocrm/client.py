@@ -141,21 +141,27 @@ class AmoCRMClient:
 
     @_retry
     async def find_lead_by_order_id(self, order_id: str) -> int | None:
-        """Поиск сделки по значению кастомного поля 'Номер заказа UDS'. Возвращает ID или None."""
+        """Поиск сделки по значению кастомного поля 'Номер заказа UDS'. Возвращает ID или None.
+
+        amoCRM не поддерживает фильтр по кастомным полям в GET /leads, поэтому используем
+        полнотекстовый query и проверяем точное совпадение поля и воронки по данным ответа.
+        """
         if not settings.amocrm_cf_order_id:
             return None
-        params: dict = {
-            f"filter[custom_fields_values][{settings.amocrm_cf_order_id}][values][0]": order_id,
-        }
-        if settings.amocrm_pipeline_id:
-            params["filter[pipeline_id][0]"] = settings.amocrm_pipeline_id
         async with await self._client() as client:
-            resp = await client.get("/api/v4/leads", params=params)
+            resp = await client.get("/api/v4/leads", params={"query": order_id})
             if resp.status_code == 204:
                 return None
             _raise_for_status(resp)
             leads = resp.json().get("_embedded", {}).get("leads", [])
-            return leads[0]["id"] if leads else None
+        for lead in leads:
+            if settings.amocrm_pipeline_id and lead.get("pipeline_id") != settings.amocrm_pipeline_id:
+                continue
+            for field in lead.get("custom_fields_values") or []:
+                if field.get("field_id") == settings.amocrm_cf_order_id:
+                    if any(str(v.get("value")) == order_id for v in field.get("values") or []):
+                        return lead["id"]
+        return None
 
     @_retry
     async def update_lead_status(self, lead_id: int, status_id: int) -> None:
