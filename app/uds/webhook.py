@@ -19,10 +19,12 @@ logger = logging.getLogger(__name__)
 # В операциях GOODS_PURCHASE приходит ещё и как отдельный заказ (webhook order),
 # поэтому из операций берём только обычные покупки, чтобы не плодить дубли сделок.
 _OPERATION_PURCHASE_ACTIONS = {"PURCHASE"}
+_OPERATION_SKIP_STATES = {"CANCELED", "REVERSAL"}
 
-# Заказы создаём как открытую сделку; закрытие — за менеджерами вручную
-# (UDS не шлёт вебхук при завершении заказа), поэтому COMPLETED/DELETED пропускаем.
+# Заказы создаём как открытую сделку; закрытие — за менеджерами вручную.
+# COMPLETED/DELETED/остальные — пропускаем.
 _ORDER_OPEN_STATES = {"NEW", "WAITING_PAYMENT", "NEED_ACK"}
+_ORDER_SKIP_STATES = {"COMPLETED", "DELETED"}
 
 
 def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
@@ -30,7 +32,12 @@ def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
     if payload.get("action") not in _OPERATION_PURCHASE_ACTIONS:
         logger.info("operation action=%s пропущен", payload.get("action"))
         return None
-    if payload.get("state", "NORMAL") != "NORMAL":
+    state = payload.get("state", "NORMAL")
+    if state in _OPERATION_SKIP_STATES:
+        logger.info("operation state=%s — возврат/отмена, пропускаем", state)
+        return None
+    if state != "NORMAL":
+        logger.info("operation state=%s пропущен", state)
         return None
 
     c = payload.get("customer") or {}
@@ -39,12 +46,14 @@ def parse_operation(payload: dict, request_id: str) -> NormalizedEvent | None:
         return None
 
     op_id = payload.get("id")
+    points = float(payload.get("points") or 0)
+    amount = payload.get("cash") if points < 0 else payload.get("total")
     return NormalizedEvent(
         event_id=request_id,
         event_type=EventType.PURCHASE,
         customer=Customer(uds_customer_id=str(c["id"]), name=c.get("displayName")),
         order_id=str(op_id) if op_id else None,
-        amount=payload.get("total"),
+        amount=amount,
         source="UDS",
         note=build_purchase_note(payload),
     )
@@ -86,6 +95,9 @@ def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
         return None
     state = payload.get("state")
 
+    if state in _ORDER_SKIP_STATES:
+        logger.info("order state=%s — возврат/отмена, пропускаем", state)
+        return None
     if state not in _ORDER_OPEN_STATES:
         logger.info("order state=%s пропущен", state)
         return None
@@ -98,6 +110,8 @@ def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
 
     # Телефон/имя получателя есть прямо в заказе (delivery) — берём оттуда.
     delivery = payload.get("delivery") or {}
+    order_points = float(payload.get("points") or 0)
+    amount = payload.get("cash") if order_points > 0 else payload.get("total")
     return NormalizedEvent(
         event_id=request_id,
         event_type=event_type,
@@ -108,7 +122,7 @@ def parse_order(payload: dict, request_id: str) -> NormalizedEvent | None:
         ),
         order_id=str(oid),
         order_state=state,
-        amount=payload.get("total"),
+        amount=amount,
         source="UDS Goods",
         note=build_order_note(payload),
     )

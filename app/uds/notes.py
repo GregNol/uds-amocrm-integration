@@ -63,11 +63,16 @@ def build_order_note(payload: dict) -> str:
 
     total = float(payload.get("total") or items_total)
     delivery_cost = round(total - items_total, 2)
+    order_points = float(payload.get("points") or 0)  # положительный = баллы списаны
 
     lines.append(f"Стоимость товаров: {_money(items_total)}")
     if delivery_cost > 0:
         lines.append(f"Стоимость доставки: {_money(delivery_cost)}")
-    lines += ["", f"ИТОГО: {_money(total)}", "", "", "СВОЙСТВА ЗАКАЗА:", _HR]
+    lines += ["", f"ИТОГО: {_money(total)}"]
+    if order_points > 0:
+        lines.append(f"Оплачено рублями: {_money(payload.get('cash'))}")
+        lines.append(f"Оплачено баллами: {int(order_points)}")
+    lines += ["", "", "СВОЙСТВА ЗАКАЗА:", _HR]
 
     if delivery.get("receiverName"):
         lines.append(f"ФИО: {delivery['receiverName']}")
@@ -94,10 +99,16 @@ def build_order_note(payload: dict) -> str:
 def build_purchase_note(payload: dict) -> str:
     c = payload.get("customer") or {}
     op_id = payload.get("id")
+    points = float(payload.get("points") or 0)
+    points_spent = -points if points < 0 else 0  # отрицательный points = списание баллов
+
     lines = ["ПОКУПКА В UDS"]
     if op_id:
         lines.append(f"Операция №{op_id}")
     lines += [_HR, f"Сумма: {_money(payload.get('total'))}"]
+    if points_spent:
+        lines.append(f"Оплачено рублями: {_money(payload.get('cash'))}")
+        lines.append(f"Оплачено баллами: {int(points_spent)}")
     if payload.get("receiptNumber"):
         lines.append(f"Чек №{payload['receiptNumber']}")
     if c.get("id"):
