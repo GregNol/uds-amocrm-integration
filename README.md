@@ -5,7 +5,7 @@
 ## Стек
 - Python 3.12 + FastAPI
 - PostgreSQL 16
-- Docker Compose (app + db). Порт приложения `8000` пробрасывается наружу.
+- Docker Compose (app + db). Подключается к внешней сети `edge` (алиас `uds-amocrm-app:8000`).
 
 ## Сценарии
 1. **Новый клиент в UDS** → контакт в amoCRM (если ещё нет).
@@ -30,12 +30,13 @@ scripts/
 
 ## Запуск
 ```bash
+docker network create edge # если еще не создана
 cp .env.example .env       # заполнить значения (в т.ч. APP_DOMAIN)
 docker compose up -d --build
 ```
 
 ### Первичная настройка
-1. **Reverse-proxy:** настройте ваш внешний прокси (Caddy, Nginx и т.д.) на `localhost:8000` (или `127.0.0.1:8000`).
+1. **Reverse-proxy:** во внешнем контейнере Caddy/Nginx направьте запрос на `uds-amocrm-app:8000`.
 2. **OAuth amoCRM:** открыть `https://<APP_DOMAIN>/amocrm/auth`, выдать права.
    Токены сохранятся в БД. (Либо вставить одноразовый «код авторизации» из интеграции.)
 3. **ID воронки/статусов/полей:**
