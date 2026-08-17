@@ -1,0 +1,26 @@
+{
+  "widget": {
+    "name": "UDS: Чат и Заказы",
+    "description": "Виджет для открытия чата с клиентом и просмотра заказа UDS внутри карточки сделки amoCRM",
+    "short_description": "UDS Чат и Заказы"
+  },
+  "settings": {
+    "uds_domain": "Домен панели UDS",
+    "cf_order_id": "Поле сделки: ID / Номер заказа UDS",
+    "cf_customer_id": "Поле контакта/сделки: ID клиента UDS"
+  },
+  "ui": {
+    "title": "UDS Интеграция",
+    "chat_btn": "Открыть чат с клиентом",
+    "order_btn": "Посмотреть заказ",
+    "customer_btn": "Профиль клиента",
+    "order_label": "Заказ UDS:",
+    "customer_label": "Клиент UDS:",
+    "not_found": "Данные UDS не найдены в сделке",
+    "open_new_tab": "В новой вкладке",
+    "modal_close": "Закрыть",
+    "modal_fullscreen": "На весь экран",
+    "modal_reload": "Обновить",
+    "modal_auth_hint": "Если панель UDS запрашивает вход — авторизуйтесь под логином администратора UDS."
+  }
+}

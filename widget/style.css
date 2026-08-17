@@ -1,0 +1,329 @@
+/* UDS amoCRM Widget Styles */
+
+.uds-widget-card {
+  margin: 12px 0;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e3e7ea;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #2e3640;
+  box-sizing: border-box;
+}
+
+.uds-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f2f4;
+}
+
+.uds-widget-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uds-widget-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ff2d55 0%, #7928ca 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.uds-widget-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1f28;
+}
+
+.uds-widget-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #f0f4f8;
+  color: #4c5a67;
+}
+
+.uds-widget-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: #5d6c7b;
+}
+
+.uds-widget-info-val {
+  font-weight: 600;
+  color: #1b232c;
+}
+
+.uds-widget-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.uds-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.uds-btn:active {
+  transform: scale(0.98);
+}
+
+.uds-btn-primary {
+  background: linear-gradient(135deg, #ec1353 0%, #7928ca 100%);
+  color: #ffffff !important;
+  border: none;
+  box-shadow: 0 2px 6px rgba(236, 19, 83, 0.25);
+}
+
+.uds-btn-primary:hover {
+  background: linear-gradient(135deg, #d80f4a 0%, #681fb3 100%);
+  box-shadow: 0 4px 10px rgba(236, 19, 83, 0.35);
+  color: #ffffff !important;
+}
+
+.uds-btn-secondary {
+  background: #f5f0fb;
+  color: #6a1b9a !important;
+  border: 1px solid #e1bee7;
+}
+
+.uds-btn-secondary:hover {
+  background: #ede7f6;
+  border-color: #ce93d8;
+  color: #4a148c !important;
+}
+
+.uds-btn-outline {
+  background: #ffffff;
+  color: #4c5a67 !important;
+  border: 1px solid #d4d9de;
+}
+
+.uds-btn-outline:hover {
+  background: #f8fafc;
+  color: #1a1f28 !important;
+  border-color: #bcc3ca;
+}
+
+.uds-btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+.uds-btn-icon-only {
+  width: 38px;
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.uds-empty-hint {
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #728090;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ================= MODAL STYLES ================= */
+
+#uds-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: udsFadeIn 0.2s ease-out;
+}
+
+.uds-modal-window {
+  width: 90vw;
+  max-width: 1300px;
+  height: 88vh;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.uds-modal-window.uds-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important;
+}
+
+.uds-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8ecef;
+  flex-shrink: 0;
+}
+
+.uds-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.uds-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uds-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #d4d9de;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.uds-modal-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.uds-modal-close-btn {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: #64748b;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.uds-modal-close-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.uds-modal-body {
+  flex: 1;
+  position: relative;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.uds-modal-body iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.uds-modal-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.uds-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #ec1353;
+  border-radius: 50%;
+  animation: udsSpin 0.8s linear infinite;
+}
+
+.uds-modal-footer {
+  padding: 8px 18px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.uds-modal-footer a {
+  color: #7928ca;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.uds-modal-footer a:hover {
+  text-decoration: underline;
+}
+
+@keyframes udsSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes udsFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}

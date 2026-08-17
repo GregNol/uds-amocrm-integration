@@ -1,0 +1,26 @@
+{
+  "widget": {
+    "name": "UDS: Chat & Orders",
+    "description": "Widget for opening UDS customer chat and orders directly inside amoCRM",
+    "short_description": "UDS Chat & Orders"
+  },
+  "settings": {
+    "uds_domain": "UDS Panel Domain",
+    "cf_order_id": "UDS Order ID Field",
+    "cf_customer_id": "UDS Customer ID Field"
+  },
+  "ui": {
+    "title": "UDS Integration",
+    "chat_btn": "Open Customer Chat",
+    "order_btn": "View Order in UDS",
+    "customer_btn": "Customer Profile",
+    "order_label": "UDS Order:",
+    "customer_label": "UDS Customer:",
+    "not_found": "No UDS data found in this deal",
+    "open_new_tab": "Open in new tab",
+    "modal_close": "Close",
+    "modal_fullscreen": "Fullscreen",
+    "modal_reload": "Reload",
+    "modal_auth_hint": "If UDS requests login, please sign in with your UDS Admin credentials."
+  }
+}
