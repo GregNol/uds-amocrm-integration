@@ -7,35 +7,39 @@
     "interface_version": 2,
     "installation": true,
     "init_once": false,
-    "locations": [
-      "lcard",
-      "ccard"
-    ],
-    "settings": {
-      "uds_domain": {
-        "type": "select",
-        "name": "settings.uds_domain",
-        "items": {
-          "admin.uds.app": "admin.uds.app",
-          "admin.getuds.app": "admin.getuds.app"
-        },
-        "default": "admin.uds.app"
-      },
-      "cf_order_id": {
-        "type": "text",
-        "name": "settings.cf_order_id",
-        "placeholder": "ID или название поля заказа UDS (авто)"
-      },
-      "cf_customer_id": {
-        "type": "text",
-        "name": "settings.cf_customer_id",
-        "placeholder": "ID или название поля клиента UDS (авто)"
-      }
-    },
-    "tour": null,
     "locale": [
       "ru",
       "en"
+    ],
+    "locations": [
+      "lcard",
+      "ccard"
     ]
-  }
+  },
+  "locations": [
+    "lcard",
+    "ccard"
+  ],
+  "settings": {
+    "uds_domain": {
+      "type": "select",
+      "name": "settings.uds_domain",
+      "items": {
+        "admin.uds.app": "admin.uds.app",
+        "admin.getuds.app": "admin.getuds.app"
+      },
+      "default": "admin.uds.app"
+    },
+    "cf_order_id": {
+      "type": "text",
+      "name": "settings.cf_order_id",
+      "placeholder": "ID или название поля заказа UDS (авто)"
+    },
+    "cf_customer_id": {
+      "type": "text",
+      "name": "settings.cf_customer_id",
+      "placeholder": "ID или название поля клиента UDS (авто)"
+    }
+  },
+  "tour": null
 }
