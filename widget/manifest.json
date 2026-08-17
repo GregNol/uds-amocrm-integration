@@ -20,26 +20,6 @@
     "lcard",
     "ccard"
   ],
-  "settings": {
-    "uds_domain": {
-      "type": "select",
-      "name": "settings.uds_domain",
-      "items": {
-        "admin.uds.app": "admin.uds.app",
-        "admin.getuds.app": "admin.getuds.app"
-      },
-      "default": "admin.uds.app"
-    },
-    "cf_order_id": {
-      "type": "text",
-      "name": "settings.cf_order_id",
-      "placeholder": "ID или название поля заказа UDS (авто)"
-    },
-    "cf_customer_id": {
-      "type": "text",
-      "name": "settings.cf_customer_id",
-      "placeholder": "ID или название поля клиента UDS (авто)"
-    }
-  },
+  "settings": {},
   "tour": null
 }
