@@ -41,7 +41,13 @@ def create_image(width: int, height: int, text: str, output_path: str, radius: i
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     images_dir = os.path.join(base_dir, "widget", "images")
-    # amoCRM requires exactly 130x100px for logo.png
+    
+    # 130x100 logos
     create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo.png"), radius=10)
+    create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo_main.png"), radius=10)
+    create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo_small.png"), radius=10)
+    
+    # Icons
     create_image(width=60, height=60, text="UDS", output_path=os.path.join(images_dir, "icon.png"), radius=8)
+    create_image(width=60, height=60, text="UDS", output_path=os.path.join(images_dir, "icon_main.png"), radius=8)
     create_image(width=30, height=30, text="UDS", output_path=os.path.join(images_dir, "icon_small.png"), radius=5)
