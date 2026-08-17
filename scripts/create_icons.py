@@ -18,7 +18,8 @@ def create_image(width: int, height: int, text: str, output_path: str, radius: i
     # Mask to rounded rectangle
     mask = Image.new("L", (width, height), 0)
     mask_draw = ImageDraw.Draw(mask)
-    mask_draw.rounded_rectangle([(0, 0), (width - 1, height - 1)], radius=radius, fill=255)
+    actual_radius = min(radius, width // 2, height // 2)
+    mask_draw.rounded_rectangle([(0, 0), (width - 1, height - 1)], radius=actual_radius, fill=255)
 
     rounded_img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     rounded_img.paste(img, (0, 0), mask=mask)
@@ -42,18 +43,27 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     images_dir = os.path.join(base_dir, "widget", "images")
     
-    # Official amoCRM image specifications:
-    # 1. logo_main.png -> 400x272 px (Widget Main Banner)
+    # Official amoCRM documentation image specifications:
+    # 1. logo_main.png -> 400x272 px
     create_image(width=400, height=272, text="UDS", output_path=os.path.join(images_dir, "logo_main.png"), radius=18)
     
-    # 2. logo.png -> 130x100 px (Widget Standard Logo)
+    # 2. logo.png -> 130x100 px
     create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo.png"), radius=10)
     
-    # 3. logo_small.png -> 84x84 px (Widget Small Logo)
-    create_image(width=84, height=84, text="UDS", output_path=os.path.join(images_dir, "logo_small.png"), radius=8)
+    # 3. logo_small.png -> 108x108 px (as per official documentation)
+    create_image(width=108, height=108, text="UDS", output_path=os.path.join(images_dir, "logo_small.png"), radius=12)
     
-    # 4. icon.png -> 60x60 px (Widget Icon)
+    # 4. logo_medium.png -> 240x84 px
+    create_image(width=240, height=84, text="UDS", output_path=os.path.join(images_dir, "logo_medium.png"), radius=10)
+    
+    # 5. logo_min.png -> 84x84 px
+    create_image(width=84, height=84, text="UDS", output_path=os.path.join(images_dir, "logo_min.png"), radius=8)
+    
+    # 6. logo_dp.png -> 174x109 px
+    create_image(width=174, height=109, text="UDS", output_path=os.path.join(images_dir, "logo_dp.png"), radius=10)
+    
+    # 7. icon.png -> 60x60 px
     create_image(width=60, height=60, text="UDS", output_path=os.path.join(images_dir, "icon.png"), radius=8)
     
-    # 5. icon_small.png -> 30x30 px (Widget Small Icon)
+    # 8. icon_small.png -> 30x30 px
     create_image(width=30, height=30, text="UDS", output_path=os.path.join(images_dir, "icon_small.png"), radius=5)

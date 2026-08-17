@@ -5,12 +5,16 @@
     "short_description": "widget.short_description",
     "version": "1.0.0",
     "interface_version": 2,
-    "installation": true,
     "init_once": false,
     "locale": [
       "ru",
       "en"
-    ]
+    ],
+    "installation": true,
+    "support": {
+      "link": "https://uds.app",
+      "email": "support@uds.app"
+    }
   },
   "locations": [
     "lcard",
@@ -18,9 +22,8 @@
   ],
   "settings": {
     "status": {
-      "type": "text",
       "name": "settings.status",
-      "value": "active",
+      "type": "text",
       "required": false
     }
   }
