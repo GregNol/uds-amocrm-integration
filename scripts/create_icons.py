@@ -2,7 +2,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 
-def create_image(width: int, height: int, text: str, output_path: str, radius: int = 12, font_scale: float = 0.35):
+def create_image(width: int, height: int, text: str, output_path: str, radius: int = 12):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -42,12 +42,18 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     images_dir = os.path.join(base_dir, "widget", "images")
     
-    # Exact dimensions required by amoCRM:
-    # 1. logo.png -> 130x100
-    create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo.png"), radius=10)
-    # 2. logo_main.png -> 400x272
+    # Official amoCRM image specifications:
+    # 1. logo_main.png -> 400x272 px (Widget Main Banner)
     create_image(width=400, height=272, text="UDS", output_path=os.path.join(images_dir, "logo_main.png"), radius=18)
-    # 3. icon.png -> 60x60
+    
+    # 2. logo.png -> 130x100 px (Widget Standard Logo)
+    create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo.png"), radius=10)
+    
+    # 3. logo_small.png -> 84x84 px (Widget Small Logo)
+    create_image(width=84, height=84, text="UDS", output_path=os.path.join(images_dir, "logo_small.png"), radius=8)
+    
+    # 4. icon.png -> 60x60 px (Widget Icon)
     create_image(width=60, height=60, text="UDS", output_path=os.path.join(images_dir, "icon.png"), radius=8)
-    # 4. icon_small.png -> 30x30
+    
+    # 5. icon_small.png -> 30x30 px (Widget Small Icon)
     create_image(width=30, height=30, text="UDS", output_path=os.path.join(images_dir, "icon_small.png"), radius=5)
