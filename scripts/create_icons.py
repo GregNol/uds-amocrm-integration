@@ -2,7 +2,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 
-def create_image(width: int, height: int, text: str, output_path: str, radius: int = 12):
+def create_image(width: int, height: int, text: str, output_path: str, radius: int = 12, font_scale: float = 0.35):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -26,7 +26,7 @@ def create_image(width: int, height: int, text: str, output_path: str, radius: i
     draw = ImageDraw.Draw(rounded_img)
     font = ImageFont.load_default()
 
-    # Draw UDS letters in center
+    # Draw UDS text in center
     bbox = draw.textbbox((0, 0), text, font=font) if hasattr(draw, "textbbox") else (0, 0, width * 0.5, height * 0.3)
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
@@ -42,12 +42,12 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     images_dir = os.path.join(base_dir, "widget", "images")
     
-    # 130x100 logos
+    # Exact dimensions required by amoCRM:
+    # 1. logo.png -> 130x100
     create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo.png"), radius=10)
-    create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo_main.png"), radius=10)
-    create_image(width=130, height=100, text="UDS", output_path=os.path.join(images_dir, "logo_small.png"), radius=10)
-    
-    # Icons
+    # 2. logo_main.png -> 400x272
+    create_image(width=400, height=272, text="UDS", output_path=os.path.join(images_dir, "logo_main.png"), radius=18)
+    # 3. icon.png -> 60x60
     create_image(width=60, height=60, text="UDS", output_path=os.path.join(images_dir, "icon.png"), radius=8)
-    create_image(width=60, height=60, text="UDS", output_path=os.path.join(images_dir, "icon_main.png"), radius=8)
+    # 4. icon_small.png -> 30x30
     create_image(width=30, height=30, text="UDS", output_path=os.path.join(images_dir, "icon_small.png"), radius=5)
