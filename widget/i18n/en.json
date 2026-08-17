@@ -5,9 +5,7 @@
     "short_description": "UDS Chat & Orders"
   },
   "settings": {
-    "uds_domain": "UDS Panel Domain",
-    "cf_order_id": "UDS Order ID Field",
-    "cf_customer_id": "UDS Customer ID Field"
+    "status": "Integration Status"
   },
   "ui": {
     "title": "UDS Integration",

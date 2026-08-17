@@ -5,9 +5,7 @@
     "short_description": "UDS Чат и Заказы"
   },
   "settings": {
-    "uds_domain": "Домен панели UDS",
-    "cf_order_id": "Поле сделки: ID / Номер заказа UDS",
-    "cf_customer_id": "Поле контакта/сделки: ID клиента UDS"
+    "status": "Статус интеграции"
   },
   "ui": {
     "title": "UDS Интеграция",

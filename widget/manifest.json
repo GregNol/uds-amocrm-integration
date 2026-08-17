@@ -14,12 +14,28 @@
     "locations": [
       "lcard",
       "ccard"
-    ]
+    ],
+    "settings": {
+      "status": {
+        "type": "text",
+        "name": "settings.status",
+        "value": "active",
+        "required": false
+      }
+    },
+    "tour": null
   },
   "locations": [
     "lcard",
     "ccard"
   ],
-  "settings": {},
+  "settings": {
+    "status": {
+      "type": "text",
+      "name": "settings.status",
+      "value": "active",
+      "required": false
+    }
+  },
   "tour": null
 }
