@@ -10,20 +10,7 @@
     "locale": [
       "ru",
       "en"
-    ],
-    "locations": [
-      "lcard",
-      "ccard"
-    ],
-    "settings": {
-      "status": {
-        "type": "text",
-        "name": "settings.status",
-        "value": "active",
-        "required": false
-      }
-    },
-    "tour": null
+    ]
   },
   "locations": [
     "lcard",
@@ -36,6 +23,5 @@
       "value": "active",
       "required": false
     }
-  },
-  "tour": null
+  }
 }
