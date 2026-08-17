@@ -33,27 +33,9 @@
       }
     },
     "tour": null,
-    "locale": {
-      "ru": {
-        "name": "UDS: Чат и Заказы",
-        "description": "Виджет для карточки сделки и контакта: открытие чата с клиентом UDS и просмотр заказа внутри amoCRM",
-        "short_description": "UDS Чат и Заказы",
-        "settings": {
-          "uds_domain": "Домен панели UDS",
-          "cf_order_id": "Поле сделки: ID / Номер заказа UDS (по умолчанию автопоиск)",
-          "cf_customer_id": "Поле контакта/сделки: ID клиента UDS (по умолчанию автопоиск)"
-        }
-      },
-      "en": {
-        "name": "UDS: Chat & Orders",
-        "description": "Widget for opening UDS customer chat and orders directly inside amoCRM",
-        "short_description": "UDS Chat & Orders",
-        "settings": {
-          "uds_domain": "UDS Panel Domain",
-          "cf_order_id": "UDS Order ID Field (auto-detected by default)",
-          "cf_customer_id": "UDS Customer ID Field (auto-detected by default)"
-        }
-      }
-    }
+    "locale": [
+      "ru",
+      "en"
+    ]
   }
 }
